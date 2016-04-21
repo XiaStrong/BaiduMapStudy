@@ -8,7 +8,7 @@
 
 #import "ViewController.h"
 #import "PlaceViewController.h"
-@interface ViewController ()<BMKMapViewDelegate,BMKPoiSearchDelegate,BMKLocationServiceDelegate>
+@interface ViewController ()<BMKMapViewDelegate,BMKPoiSearchDelegate,BMKLocationServiceDelegate,UIActionSheetDelegate,BMKRouteSearchDelegate>
 {
     BMKPointAnnotation* _annotation;//标注类
     
@@ -24,8 +24,14 @@
     
     
     CLLocationCoordinate2D _coor;//自己的坐标
+    
+    
+   
+
 }
 @end
+
+
 
 @implementation ViewController
 
@@ -58,6 +64,12 @@
 
     //    [_mapView removeAnnotations:_annotationArr];
     //    [_annotationArr removeAllObjects];
+    
+//    _routesearch.delegate=self;
+//    
+//    UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"获取路线" message:nil delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"当前--选中",@"from--to", nil];
+//    alert.tag=11;
+//    [alert show];
  
 }
 
@@ -65,12 +77,12 @@
     
     PlaceViewController *pc=[[PlaceViewController alloc]init];
 
-    //切换之前添加block
-    [pc setGetDic:^(NSDictionary *placeDic) {
-        
-        NSLog(@"%@",placeDic);
-
-    }];
+//    //切换之前添加block
+//    [pc setGetDic:^(NSDictionary *placeDic) {
+//        
+//        NSLog(@"%@",placeDic);
+//
+//    }];
     
     [self.navigationController pushViewController:pc animated:YES];
 
@@ -86,38 +98,51 @@
     [_mapView removeAnnotations:array];
     
     UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"搜索" message:nil delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
+    alert.tag=10;
     [alert setAlertViewStyle:UIAlertViewStylePlainTextInput];
     
     UITextField *nameField = [alert textFieldAtIndex:0];
     nameField.placeholder = @"请输入需要搜索的东西";
     
     [alert show];
+    
 }
 
 -(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
-    if (buttonIndex==1) {
-        
-        UITextField *what = [alertView textFieldAtIndex:0];
-        NSLog(@"%@",what.text);
-        //检索
-        _searcher =[[BMKPoiSearch alloc]init];
-        _searcher.delegate = self;
-        //发起检索
-        
-        _option = [[BMKNearbySearchOption alloc]init];
-        _option.pageIndex = 0;
-        _option.pageCapacity = 20;
-        
-//        CLLocationCoordinate2D coors = {39.915, 116.404};//此处是一个北京的坐标
-        //自己的坐标
-        _option.location = _coor;
-        _option.keyword = what.text;
-        
-        //不等几秒后再检索不会生效
-        [self performSelector:@selector(search) withObject:nil afterDelay:1.0f];
-        
+    
+    //搜索的
+    if (alertView.tag==10) {
+        if (buttonIndex==1) {
+            
+            UITextField *what = [alertView textFieldAtIndex:0];
+            NSLog(@"%@",what.text);
+            //检索
+            _searcher =[[BMKPoiSearch alloc]init];
+            _searcher.delegate = self;
+            //发起检索
+            
+            _option = [[BMKNearbySearchOption alloc]init];
+            _option.pageIndex = 0;
+            _option.pageCapacity = 20;
+            
+            //        CLLocationCoordinate2D coors = {39.915, 116.404};//此处是一个北京的坐标
+            //自己的坐标
+            _option.location = _coor;
+            _option.keyword = what.text;
+            
+            //不等几秒后再检索不会生效
+            [self performSelector:@selector(search) withObject:nil afterDelay:1.0f];
+            
+        }
     }
+    
+    
 }
+
+
+
+
+
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -173,8 +198,12 @@
     [_mapView updateLocationData:userLocation];
     CGFloat x=userLocation.location.coordinate.latitude;
     CGFloat y=userLocation.location.coordinate.longitude;
+    
+    //得到自己的坐标
     _coor.latitude=x;
     _coor.longitude=y;
+    
+    
     [_locService stopUserLocationService];
 
 
@@ -338,6 +367,8 @@
 //    }
     
 }
+
+
 //创建标注
 -(void)creat{
     if (_annotation == nil) {
@@ -402,6 +433,7 @@
     //打印选中地点的坐标
     [mapView bringSubviewToFront:view];
     [mapView setNeedsDisplay];
+    //获取选取标的的坐标点
     _annotation=view.annotation;
     NSLog(@"%f__%f",view.annotation.coordinate.latitude,view.annotation.coordinate.longitude);
 }
@@ -460,14 +492,5 @@
     // Dispose of any resources that can be recreated.
 }
 
-/*
- #pragma mark - Navigation
- 
- // In a storyboard-based application, you will often want to do a little preparation before navigation
- - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
- // Get the new view controller using [segue destinationViewController].
- // Pass the selected object to the new view controller.
- }
- */
 
 @end

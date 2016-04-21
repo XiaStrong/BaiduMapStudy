@@ -12,8 +12,10 @@
 
 @property (weak, nonatomic) IBOutlet UITextField *fromTf;
 @property (weak, nonatomic) IBOutlet UITextField *toTf;
+
 - (IBAction)sureClick:(id)sender;
 
+@property (weak, nonatomic) IBOutlet BMKMapView *mapView;
 
 @property (nonatomic ,copy) void (^getDic)(NSDictionary *dic);
 
